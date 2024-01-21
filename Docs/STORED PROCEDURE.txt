@@ -1,0 +1,1139 @@
+stored procedures
+
+1) USP_BLOGS
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `USP_BLOGS`(
+	IN  P_DBMODE VARCHAR(200),
+    INOUT  P_RECORD_ID BIGINT,
+    IN  P_TITLE VARCHAR(500),
+    IN  P_DESCRIPTION VARCHAR(3000), 
+    IN  P_ACTIVE  VARCHAR(1),
+	IN  P_LOGINID	VARCHAR(200),
+    IN  P_AUTHZ_LIST VARCHAR(3000),
+    OUT  P_ERRORCODE VARCHAR(3000),
+    OUT  P_ERRORFLAG VARCHAR(3000),
+    OUT  P_ERRORDESC VARCHAR(3000)
+)
+BEGIN
+this_proc: BEGIN
+	DECLARE V_RECORD_CNT INT;
+	DECLARE V_AUTHZ_LIST INT;
+    DECLARE V_MAKER_CHECKER INT;
+    /*IF(P_DBMODE NOT IN('SELECT','INSERT','UPDATE','AUTHZ','GETAUTHZLIST','SEARCH'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Mode';
+        LEAVE this_proc;
+    END IF;
+    IF(P_LOGINID IS NULL)
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Login ID';
+        LEAVE this_proc;
+    END IF;
+    IF(P_TITLE IS NULL AND P_DBMODE IN('INSERT'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Title';
+        LEAVE this_proc;
+    END IF;
+    IF(P_DESCRIPTION IS NULL AND P_DBMODE IN('INSERT'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Description';
+        LEAVE this_proc;
+    END IF;
+    IF(P_RECORD_ID IS NULL AND P_DBMODE IN('UPDATE'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Record ID';
+        LEAVE this_proc;
+    END IF;
+    IF(P_ACTIVE IS NULL AND P_DBMODE IN('UPDATE'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Active Flag';
+        LEAVE this_proc;
+    END IF;
+    IF(P_ACTIVE NOT IN('Y','N') AND P_DBMODE IN('UPDATE'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Active Flag';
+        LEAVE this_proc;
+    END IF;
+    IF (P_AUTHZ_LIST IS NULL AND P_DBMODE IN('AUTHZ'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Authorization List Should not be Empty';
+        LEAVE this_proc;
+    END IF; */
+	IF(P_DBMODE='SELECT')
+    THEN
+		SELECT a.RecordId,a.Title,substring(a.Description,1,100) as Description,a.CreatedDate,c.Name,c.Gender,c.ImgUrl
+        FROM tbl_blogs a join  tbl_login_master b on a.CreatedBy=b.RecordId join tbl_user_master c on c.recordId=b.recordId
+        WHERE a.Active='Y' AND a.AuthorizeBy IS NOT NULL AND a.AuthorizeDate IS NOT NULL;
+        
+        SET P_ERRORCODE='RES000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='';
+        LEAVE this_proc;
+	END IF;
+    IF(P_DBMODE='INSERT')
+    THEN
+		INSERT INTO tbl_blogs
+			(
+			Title,
+			Description,
+			Active,
+			CreatedBy,
+			CreatedDate
+            )
+			VALUES
+			(
+            P_TITLE,
+			P_DESCRIPTION,
+			'N',
+			P_LOGINID,
+			NOW()
+			);
+        SET P_ERRORCODE='RES000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='Record Inserted Successfully';
+        LEAVE this_proc;
+	END IF;
+    IF(P_DBMODE='UPDATE')
+    THEN
+	  SELECT COUNT(1) INTO V_RECORD_CNT FROM tbl_blogs WHERE RecordId=P_RECORD_ID;
+      IF (V_RECORD_CNT>0)
+      THEN
+		UPDATE tbl_blogs 
+        SET 
+			Title=IFNULL(P_TITLE,Title),
+			Description=IFNULL(P_DESCRIPTION,Description),
+			Active=IFNULL(P_ACTIVE,Active),
+			ModifiedBy=P_LOGINID,
+			ModifiedDate=NOW()
+		WHERE 
+			RecordId=P_RECORD_ID;
+            
+        SET P_ERRORCODE='RES000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='Record Updated Successfully';
+        LEAVE this_proc;
+	 ELSE
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Record ID';
+        LEAVE this_proc;
+     END IF;
+	END IF;
+    
+    IF(P_DBMODE = 'GET_BLOG_BY_RECORD_ID')
+    THEN
+		SELECT COUNT(1) INTO V_RECORD_CNT FROM tbl_blogs WHERE RecordId=P_RECORD_ID;
+      IF (V_RECORD_CNT>0)
+      THEN
+        SELECT a.RecordId,a.Title,a.Description,a.CreatedDate,c.Name,c.Email,c.Mobile,c.CompanyName,c.ImgUrl,c.Gender
+        FROM tbl_blogs a join  tbl_login_master b on a.CreatedBy=b.RecordId join tbl_user_master c on c.recordId=b.recordId
+        WHERE a.Active='Y' AND a.AuthorizeBy IS NOT NULL AND a.AuthorizeDate  IS NOT NULL;
+        
+        SET P_ERRORCODE='RES000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='Success';
+        LEAVE this_proc;
+      ELSE
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Record ID';
+        
+		LEAVE this_proc;
+        End IF;
+    END IF;
+    
+    IF(P_DBMODE='AUTHZ') 
+    THEN
+		SELECT COUNT(1) INTO V_MAKER_CHECKER FROM tbl_blogs WHERE FIND_IN_SET(RecordId,P_AUTHZ_LIST) AND Active='N' AND AuthorizeBy IS NULL AND AuthorizeDate  IS NULL AND CreatedBy=P_LOGINID;
+        IF(V_MAKER_CHECKER>0)
+		THEN
+			SET P_ERRORCODE='RES0001';
+			SET P_ERRORFLAG='Y';
+			SET P_ERRORDESC='Maker and Checker should not be Same';
+			LEAVE this_proc;
+		END IF;
+		SELECT COUNT(1) INTO V_AUTHZ_LIST FROM tbl_blogs WHERE FIND_IN_SET(RecordId,P_AUTHZ_LIST);
+        IF(V_AUTHZ_LIST>0)
+        THEN
+         SET SQL_SAFE_UPDATES=0;
+			UPDATE tbl_blogs 
+			SET 
+				Active='Y',
+				ModifiedBy=P_LOGINID,
+				ModifiedDate=NOW(),
+                AuthorizeBy=P_LOGINID,
+                AuthorizeDate=NOW()
+			WHERE 
+				FIND_IN_SET(RecordId,P_AUTHZ_LIST);
+          SET SQL_SAFE_UPDATES=1;      
+			SET P_ERRORCODE='RES0000';
+			SET P_ERRORFLAG='N';
+			SET P_ERRORDESC='Records Authorize Successfully';
+            LEAVE this_proc;
+        ELSE
+			SET P_ERRORCODE='RES0001';
+			SET P_ERRORFLAG='Y';
+			SET P_ERRORDESC='No Records Found for Authorization';
+            LEAVE this_proc;
+        END IF;
+    END IF;
+    IF(P_DBMODE='GETAUTHZLIST')
+    THEN
+		SELECT * FROM tbl_blogs WHERE Active='N' AND AuthorizeBy IS NULL AND AuthorizeDate  IS NULL AND CreatedBy<>P_LOGINID;
+        SET P_ERRORCODE='RES0000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='';
+        LEAVE this_proc;
+	END IF;
+    IF(P_DBMODE='SEARCH')
+    THEN
+		SELECT a.*,b.Name,b.PassoutYear,b.Branch 
+        FROM tbl_blogs a join tbl_usermaster b on a.CreatedBy=b.RecordId
+        WHERE 
+        a.RecordId=IFNULL(P_RECORD_ID,a.RecordId)
+        AND a.Title=IFNULL(P_TITLE,a.Title)
+        AND a.Description=IFNULL(P_DESCRIPTION,a.Description)
+        AND a.Active=IFNULL(P_ACTIVE,a.Active);
+        
+        SET P_ERRORCODE='RES0000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='';
+        LEAVE this_proc;
+	END IF;
+END;
+END
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+2)  USP_EVENT
+
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `USP_EVENT`(
+	IN  P_DBMODE VARCHAR(200),
+    INOUT  P_RECORD_ID BIGINT,
+    IN  P_TITLE VARCHAR(500),
+    IN  P_IMG_URL VARCHAR(1000), 
+    IN  P_EVENT_DETAIL VARCHAR(3000),
+    IN  P_EVENT_DATE DATETIME,
+    IN  P_ACTIVE  VARCHAR(1),
+	IN  P_LOGINID	VARCHAR(200),
+    IN  P_AUTHZ_LIST VARCHAR(3000),
+    OUT  P_ERRORCODE VARCHAR(3000),
+    OUT  P_ERRORFLAG VARCHAR(3000),
+    OUT  P_ERRORDESC VARCHAR(3000)
+)
+BEGIN
+this_proc: BEGIN
+	DECLARE V_RECORD_CNT INT;
+	DECLARE V_AUTHZ_LIST INT;
+    DECLARE V_MAKER_CHECKER INT;
+    /*IF(P_DBMODE NOT IN('SELECT','INSERT','UPDATE','AUTHZ','GETAUTHZLIST','SEARCH'))
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Mode';
+        LEAVE this_proc;
+    END IF;
+    IF(P_LOGINID IS NULL)
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Login ID';
+        LEAVE this_proc;
+    END IF;
+    IF(P_TITLE IS NULL AND P_DBMODE IN('INSERT'))
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Title';
+        LEAVE this_proc;
+    END IF;
+    IF(P_IMG_URL IS NULL AND P_DBMODE IN('INSERT'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Image URL';
+        LEAVE this_proc;
+    END IF;
+    IF(P_RECORD_ID IS NULL AND P_DBMODE IN('UPDATE'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Record ID';
+        LEAVE this_proc;
+    END IF;
+    IF(P_ACTIVE IS NULL AND P_DBMODE IN('UPDATE'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Active Flag';
+        LEAVE this_proc;
+    END IF;
+    IF(P_ACTIVE NOT IN('Y','N') AND P_DBMODE IN('UPDATE'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Active Flag';
+        LEAVE this_proc;
+    END IF;
+    IF (P_AUTHZ_LIST IS NULL AND P_DBMODE IN('AUTHZ'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Authorization List Should not be Empty';
+        LEAVE this_proc;
+    END IF;*/
+	IF(P_DBMODE='SELECT')
+    THEN
+		SELECT * FROM tbl_event WHERE Active='Y' AND AuthorizeBy IS NOT NULL AND AuthorizeDate  IS NOT NULL;
+        SET P_ERRORCODE='RES000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='';
+        LEAVE this_proc;
+	END IF;
+    IF(P_DBMODE='INSERT')
+    THEN
+		INSERT INTO tbl_event
+			(
+			Title,
+			ImgUrl,
+			EventDetail,
+			EventDate,
+			Active,
+			CreatedBy,
+			CreatedDate
+            )
+			VALUES
+			(
+            P_TITLE,
+			P_IMG_URL,
+			P_EVENT_DETAIL,
+			P_EVENT_DATE,
+			'N',
+			P_LOGINID,
+			NOW()
+			);
+            
+		SET P_RECORD_ID = (select RecordId from tbl_event order by 1 desc limit 1);
+        
+        update tbl_event set imgUrl=concat('Event' , P_RECORD_ID,'.',P_IMG_URL) where recordId=P_RECORD_ID;
+        
+        SET P_ERRORCODE='RES000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='Record Inserted Successfully';
+        LEAVE this_proc;
+	END IF;
+    IF(P_DBMODE='UPDATE')
+    THEN
+	  SELECT COUNT(1) INTO V_RECORD_CNT FROM tbl_event WHERE RecordId=P_RECORD_ID;
+      IF (V_RECORD_CNT>0)
+      THEN
+		UPDATE tbl_event 
+        SET 
+			Title=IFNULL(P_TITLE,Title),
+			ImgUrl=IFNULL(P_IMG_URL,ImgUrl),
+			EventDetail=IFNULL(P_EVENT_DETAIL,EventDetail),
+			EventDate=IFNULL(P_EVENT_DATE,EventDate),
+			Active=IFNULL(P_ACTIVE,Active),
+			ModifiedBy=P_LOGINID,
+			ModifiedDate=NOW()
+		WHERE 
+			RecordId=P_RECORD_ID;
+            
+        SET P_ERRORCODE='RES000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='Record Updated Successfully';
+        LEAVE this_proc;
+	 ELSE
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Record ID';
+        LEAVE this_proc;
+     END IF;
+	END IF;
+    IF(P_DBMODE='AUTHZ') 
+    THEN
+		SELECT COUNT(1) INTO V_MAKER_CHECKER FROM tbl_event WHERE FIND_IN_SET(RecordId,P_AUTHZ_LIST) AND Active='N' AND AuthorizeBy IS NULL AND AuthorizeDate  IS NULL AND CreatedBy=P_LOGINID;
+        IF(V_MAKER_CHECKER>0)
+		THEN
+			SET P_ERRORCODE='RES001';
+			SET P_ERRORFLAG='Y';
+			SET P_ERRORDESC='Maker and Checker should not be Same';
+			LEAVE this_proc;
+		END IF;
+		SELECT COUNT(1) INTO V_AUTHZ_LIST FROM tbl_event WHERE FIND_IN_SET(RecordId,P_AUTHZ_LIST);
+        IF(V_AUTHZ_LIST>0)
+        THEN
+         SET SQL_SAFE_UPDATES=0;
+			UPDATE tbl_event 
+			SET 
+				Active='Y',
+				ModifiedBy=P_LOGINID,
+				ModifiedDate=NOW(),
+                AuthorizeBy=P_LOGINID,
+                AuthorizeDate=NOW()
+			WHERE 
+				FIND_IN_SET(RecordId,P_AUTHZ_LIST);
+          SET SQL_SAFE_UPDATES=1;      
+			SET P_ERRORCODE='RES000';
+			SET P_ERRORFLAG='N';
+			SET P_ERRORDESC='Records Authorize Successfully';
+            LEAVE this_proc;
+        ELSE
+			SET P_ERRORCODE='RES001';
+			SET P_ERRORFLAG='Y';
+			SET P_ERRORDESC='No Records Found for Authorization';
+            LEAVE this_proc;
+        END IF;
+    END IF;
+    IF(P_DBMODE='GETAUTHZLIST')
+    THEN
+		SELECT * FROM tbl_event WHERE Active='N' AND AuthorizeBy IS NULL AND AuthorizeDate  IS NULL AND CreatedBy<>P_LOGINID;
+        SET P_ERRORCODE='RES000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='';
+        LEAVE this_proc;
+	END IF;
+    IF(P_DBMODE='SEARCH')
+    THEN
+		SELECT * FROM tbl_event 
+        WHERE 
+        RecordId=IFNULL(P_RECORD_ID,RecordId)
+        AND Title=IFNULL(P_TITLE,Title)
+        AND ImgUrl=IFNULL(P_IMG_URL,ImgUrl)
+        AND Active=IFNULL(P_ACTIVE,Active);
+        
+        SET P_ERRORCODE='RES000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='';
+        LEAVE this_proc;
+	END IF;
+END;
+END
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+3)  USP_OPENING
+
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `USP_OPENING`(
+	IN  P_DBMODE VARCHAR(200),
+    INOUT  P_RECORD_ID BIGINT,
+    IN  P_JOB_TITLE VARCHAR(500),
+    IN  P_JOB_DESCRIPTION VARCHAR(3000), 
+    IN  P_TYPE VARCHAR(200),
+    IN  P_ACTIVE  VARCHAR(1),
+    IN  P_VALID_DATE DATETIME,
+	IN  P_LOGINID	VARCHAR(200),
+    IN  P_AUTHZ_LIST VARCHAR(3000),
+    OUT  P_ERRORCODE VARCHAR(3000),
+    OUT  P_ERRORFLAG VARCHAR(3000),
+    OUT  P_ERRORDESC VARCHAR(3000)
+)
+BEGIN
+this_proc: BEGIN
+	DECLARE V_RECORD_CNT INT;
+	DECLARE V_AUTHZ_LIST INT;
+    DECLARE V_MAKER_CHECKER INT;
+    /*IF(P_DBMODE NOT IN('SELECT','INSERT','UPDATE','AUTHZ','GETAUTHZLIST','SEARCH'))
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Mode';
+        LEAVE this_proc;
+    END IF;
+    IF(P_LOGINID IS NULL)
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Login ID';
+        LEAVE this_proc;
+    END IF;
+    IF(P_JOB_TITLE IS NULL AND P_DBMODE IN('INSERT'))
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Job Title should not be empty';
+        LEAVE this_proc;
+    END IF;
+    IF(P_JOB_DESCRIPTION IS NULL AND P_DBMODE IN('INSERT'))
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Job Description should not be empty';
+        LEAVE this_proc;
+    END IF;
+    IF(P_TYPE IS NULL)
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Type';
+        LEAVE this_proc;
+    END IF;
+    IF(P_TYPE NOT IN('O','I'))
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Type';
+        LEAVE this_proc;
+    END IF;
+    IF(P_RECORD_ID IS NULL AND P_DBMODE IN('UPDATE'))
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Record ID';
+        LEAVE this_proc;
+    END IF;
+    IF(P_ACTIVE IS NULL AND P_DBMODE IN('UPDATE'))
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Active Flag';
+        LEAVE this_proc;
+    END IF;
+    IF(P_ACTIVE NOT IN('Y','N') AND P_DBMODE IN('UPDATE'))
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Active Flag';
+        LEAVE this_proc;
+    END IF;
+    IF (P_AUTHZ_LIST IS NULL AND P_DBMODE IN('AUTHZ'))
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Authorization List Should not be Empty';
+        LEAVE this_proc;
+    END IF;*/
+	IF(P_DBMODE='SELECT')
+    THEN
+		SELECT a.RecordId,a.JobTitle as Title,a.JobDescription as Description,a.CreatedDate,c.Name,c.EmailId as Email,c.MobileNo as Mobile,c.BusinessServiceCompanyName as CompanyName,c.ImgUrl,c.Gender
+        FROM tbl_opening a join  tbl_login_master b on a.CreatedBy=b.RecordId join tbl_user_master c on c.recordId=b.recordId
+        WHERE a.Active='Y' and a.Type=P_TYPE;/* AND a.AuthorizeBy IS NOT NULL AND a.AuthorizeDate  IS NOT NULL;*/
+        SET P_ERRORCODE='RES0000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='';
+        LEAVE this_proc;
+	END IF;
+    IF(P_DBMODE='INSERT')
+    THEN
+		INSERT INTO tbl_opening
+			(
+			JobTitle,
+			JobDescription,
+			Type,
+			Active,
+			ValidDate,
+			CreatedBy,
+			CreatedDate
+            )
+			VALUES
+			(
+            P_JOB_TITLE,
+			P_JOB_DESCRIPTION,
+			P_TYPE,
+			'Y',
+			P_VALID_DATE,
+			P_LOGINID,
+			NOW()
+			);
+        SET P_ERRORCODE='RES0000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='Record Inserted Successfully';
+        LEAVE this_proc;
+	END IF;
+    IF(P_DBMODE='UPDATE')
+    THEN
+	  SELECT COUNT(1) INTO V_RECORD_CNT FROM tbl_opening WHERE RecordId=P_RECORD_ID;
+      IF (V_RECORD_CNT>0)
+      THEN
+		UPDATE tbl_opening 
+        SET 
+			JobTitle=IFNULL(P_JOB_TITLE,JobTitle),
+			JobDescription=IFNULL(P_JOB_DESCRIPTION,JobDescription),
+			Type=IFNULL(P_TYPE,Type),
+			Active=IFNULL(P_ACTIVE,Active),
+			ValidDate=IFNULL(P_VALID_DATE,ValidDate),
+			ModifiedBy=P_LOGINID,
+			ModifiedDate=NOW()
+		WHERE 
+			RecordId=P_RECORD_ID;
+            
+        SET P_ERRORCODE='RES0000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='Record Updated Successfully';
+        LEAVE this_proc;
+	 ELSE
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Record ID';
+        LEAVE this_proc;
+     END IF;
+	END IF;
+    IF(P_DBMODE='AUTHZ') 
+    THEN
+		SELECT COUNT(1) INTO V_MAKER_CHECKER FROM tbl_opening WHERE FIND_IN_SET(RecordId,P_AUTHZ_LIST) AND Active='N' AND Type=P_TYPE AND AuthorizeBy IS NULL AND AuthorizeDate  IS NULL AND CreatedBy=P_LOGINID;
+        IF(V_MAKER_CHECKER>0)
+		THEN
+			SET P_ERRORCODE='RES0001';
+			SET P_ERRORFLAG='Y';
+			SET P_ERRORDESC='Maker and Checker should not be Same';
+			LEAVE this_proc;
+		END IF;
+		SELECT COUNT(1) INTO V_AUTHZ_LIST FROM tbl_opening WHERE FIND_IN_SET(RecordId,P_AUTHZ_LIST)  AND Type=P_TYPE;
+        IF(V_AUTHZ_LIST>0)
+        THEN
+         SET SQL_SAFE_UPDATES=0;
+			UPDATE tbl_opening 
+			SET 
+				Active='Y',
+				ModifiedBy=P_LOGINID,
+				ModifiedDate=NOW(),
+                AuthorizeBy=P_LOGINID,
+                AuthorizeDate=NOW()
+			WHERE 
+				FIND_IN_SET(RecordId,P_AUTHZ_LIST) AND Type=P_TYPE;
+          SET SQL_SAFE_UPDATES=1;      
+			SET P_ERRORCODE='RES0000';
+			SET P_ERRORFLAG='N';
+			SET P_ERRORDESC='Records Authorize Successfully';
+            LEAVE this_proc;
+        ELSE
+			SET P_ERRORCODE='RES0001';
+			SET P_ERRORFLAG='Y';
+			SET P_ERRORDESC='No Records Found for Authorization';
+            LEAVE this_proc;
+        END IF;
+    END IF;
+    IF(P_DBMODE='GETAUTHZLIST')
+    THEN
+		SELECT * FROM tbl_opening WHERE Active='N' AND Type=P_TYPE AND AuthorizeBy IS NULL AND AuthorizeDate  IS NULL AND CreatedBy<>P_LOGINID;
+        SET P_ERRORCODE='RES0000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='';
+        LEAVE this_proc;
+	END IF;
+    IF(P_DBMODE='SEARCH')
+    THEN
+		SELECT a.*,b.Name,b.Email,b.PassoutYear,b.Branch 
+        FROM tbl_opening a join  tbl_usermaster b on a.CreatedBy=b.RecordId
+        WHERE 
+        a.RecordId=IFNULL(P_RECORD_ID,a.RecordId)
+        AND a.JobTitle=IFNULL(P_JOB_TITLE,a.JobTitle)
+        AND a.JobDescription=IFNULL(P_JOB_DESCRIPTION,a.JobDescription)
+        AND a.Type=IFNULL(P_TYPE,a.Type)
+        AND a.Active=IFNULL(P_ACTIVE,a.Active);
+        
+        SET P_ERRORCODE='RES0000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='';
+        LEAVE this_proc;
+	END IF;
+END;
+END
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+4) USP_USER_LOGIN
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `USP_USER_LOGIN`(
+IN P_TYPE VARCHAR(50),
+INOUT P_RECORD_ID INT,
+IN P_LOGIN_ID VARCHAR(50),
+IN P_MOBILE VARCHAR(20),
+IN P_EMAIL VARCHAR(50),
+IN P_STATUS VARCHAR(1),
+IN P_OTP VARCHAR(10),
+IN P_PASSWORD VARCHAR(100),
+IN P_AUTHORIZED_BY VARCHAR(50),
+OUT P_ERRORCODE varchar(3000),
+OUT P_ERRORFLAG varchar(3000),
+OUT P_ERRORDESC varchar(3000)
+)
+BEGIN
+this_proc: BEGIN
+
+DECLARE V_RECORD_ID INT;
+
+IF P_TYPE = 'VALIDATE'
+THEN			
+	SET @RECORD_ID = (SELECT LOGINID FROM TBL_LOGIN_MASTER WHERE EMAIL=P_EMAIL AND PASSWORD=P_PASSWORD);/* and AuthorizedDate is not null and authorizedBy is not null and Active='Y');*/
+           
+    IF(@RECORD_ID <> '')
+    THEN
+		SELECT * FROM TBL_USER_MASTER WHERE RECORDID=@RECORD_ID;
+        
+        SET P_RECORD_ID = @RECORD_ID;
+        SET P_ERRORCODE = 'SUC000';
+		SET P_ERRORFLAG = 'N';
+		SET P_ERRORDESC = 'SUCCESS';
+        leave this_proc;
+	ELSE
+		SET P_ERRORCODE = 'ERR003';
+		SET P_ERRORFLAG = 'Y';
+		SET P_ERRORDESC = 'Invalid Credentials';
+        leave this_proc;
+    END IF;
+END IF;
+IF P_TYPE = 'FORGOT'
+THEN
+	IF NOT exists(SELECT EMAIL FROM TBL_LOGIN_MASTER WHERE EMAIL = P_EMAIL and ACTIVE='Y')
+	THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='User not registered in system. Please Sign up/Register.';
+           leave this_proc;
+	ELSE
+		SELECT RECORD_ID INTO V_RECORD_ID FROM OTP_LOG WHERE EMAIL=P_EMAIL AND OTP=P_OTP AND STATUS='N' AND TIMESTAMPDIFF(MINUTE,CERATED_DATE,NOW())<=5;
+		 IF(V_RECORD_ID IS NOT NULL)
+		THEN
+			UPDATE OTP_LOG SET 
+			STATUS='Y',
+			MODIFIED_DATE=NOW(),
+			MODIFIED_BY=P_MOBILE
+			WHERE 
+			RECORD_ID=V_RECORD_ID;
+	
+			SET P_ERRORCODE='RES000';
+			SET P_ERRORFLAG='N';
+			SET P_ERRORDESC='Success';
+            leave this_proc;
+		else
+			SET P_ERRORCODE='RES001';
+			SET P_ERRORFLAG='Y';
+			SET P_ERRORDESC='Invalid OTP';
+            leave this_proc;
+		end if;    
+	END IF;
+END IF;
+
+IF P_TYPE = 'REG'
+THEN
+	IF exists(SELECT EMAIL FROM TBL_LOGIN_MASTER WHERE EMAIL = P_EMAIL )
+	THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Email Id already registered in system. Please try with Login.';
+           leave this_proc;
+	ELSE
+		SELECT RECORD_ID INTO V_RECORD_ID FROM OTP_LOG WHERE EMAIL=P_EMAIL AND OTP=P_OTP AND STATUS='N' AND TIMESTAMPDIFF(MINUTE,CERATED_DATE,NOW())<=5;
+		 IF(V_RECORD_ID IS NOT NULL)
+		THEN
+			UPDATE OTP_LOG SET 
+			STATUS='Y',
+			MODIFIED_DATE=NOW(),
+			MODIFIED_BY=P_MOBILE
+			WHERE 
+			RECORD_ID=V_RECORD_ID;
+	
+			SET P_ERRORCODE='RES000';
+			SET P_ERRORFLAG='N';
+			SET P_ERRORDESC='Success';
+            leave this_proc;
+		else
+			SET P_ERRORCODE='RES001';
+			SET P_ERRORFLAG='Y';
+			SET P_ERRORDESC='Invalid OTP';
+            leave this_proc;
+		end if;    
+	END IF;
+END IF;
+
+IF P_TYPE = 'UPDATE_PASSWORD'
+THEN
+	SET P_RECORD_ID = (SELECT RECORDID FROM TBL_LOGIN_MASTER WHERE EMAIL=P_EMAIL and active='Y');
+	IF P_RECORD_ID <> '' AND P_RECORD_ID <> null
+    THEN
+	UPDATE TBL_LOGIN_MASTER SET PASSWORD=P_PASSWORD,ModifiedDate=now() WHERE recordId=P_RECORD_ID;
+    
+    SET P_ERRORCODE='RES000';
+	SET P_ERRORFLAG='N';
+	SET P_ERRORDESC='Success';
+	leave this_proc;
+    ELSE
+		SET P_ERRORCODE='RES001';
+	SET P_ERRORFLAG='Y';
+	SET P_ERRORDESC='Something went wrong. Please try again.';
+	leave this_proc;
+    END IF;
+END IF;
+END;
+END
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+5)USP_USER_MASTER
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `USP_USER_MASTER`(
+	IN  P_DBMODE VARCHAR(200),
+    INOUT  P_RECORD_ID BIGINT,
+    IN  P_NAME VARCHAR(200),
+    IN  P_EMAIL VARCHAR(200), 
+    IN  P_MOBILE VARCHAR(20), 
+    IN  P_DOB DATETIME, 
+    IN  P_GENDER  VARCHAR(1),
+    IN  P_NICK_NAME VARCHAR(50),
+    IN  P_BLOOD_GROUP VARCHAR(10),
+    IN  P_CITY VARCHAR(200),
+	IN  P_NATIVE VARCHAR(100),
+    IN  P_STATE VARCHAR(200),
+    IN  P_COUNTRY VARCHAR(200),
+    IN  P_BRANCH VARCHAR(200),
+	IN  P_ADDMISSION_YEAR VARCHAR(4),
+    IN  P_PASSOUT_YEAR VARCHAR(4),
+    IN  P_HOBBIES VARCHAR(500),
+    IN  P_COMPANYNAME VARCHAR(500),
+	IN  P_DESIGNATION VARCHAR(500),
+    IN  P_HIGHER_EDUCATION VARCHAR(500),
+    IN  P_BACHELOR_DEGREE VARCHAR(500),
+    IN  P_SPECIALIZATION VARCHAR(500),
+    IN  P_IMG_URL VARCHAR(1000),
+    IN  P_EXPERIENCE VARCHAR(3000),
+    IN  P_ABOUT VARCHAR(3000),
+	IN  P_LOGINID	VARCHAR(200),
+    IN  P_AUTHZ_LIST VARCHAR(3000),
+    IN  P_LINKED_IN VARCHAR(200),
+    IN P_PASSWORD VARCHAR(100),
+    IN P_BDAY_FLAG VARCHAR(1),
+    OUT  P_ERRORCODE VARCHAR(3000),
+    OUT  P_ERRORFLAG VARCHAR(3000),
+    OUT  P_ERRORDESC VARCHAR(3000)
+)
+BEGIN
+this_proc: BEGIN
+	DECLARE V_RECORD_CNT INT;
+	DECLARE V_AUTHZ_LIST INT;
+    DECLARE V_MAKER_CHECKER INT;
+    IF(P_DBMODE IS NULL)
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Mode';
+        LEAVE this_proc;
+    END IF;
+    IF(P_DBMODE NOT IN('SELECT','INSERT','UPDATE','AUTHZ','GETAUTHZLIST','SEARCH','GET_HEADER_VALUES','GET_USER_LIST','GET_USER_BY_RECORD_ID','UPDATE_PROFILE_PHOTO'))
+    THEN
+		SET P_ERRORCODE='RES0001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Mode';
+        LEAVE this_proc;
+    END IF;
+    IF(P_LOGINID IS NULL && P_DBMODE <> 'INSERT')
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Login ID';
+        LEAVE this_proc;
+    END IF;
+    IF(P_RECORD_ID IS NULL AND P_DBMODE IN('UPDATE'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Record ID';
+        LEAVE this_proc;
+    END IF;
+    IF (P_AUTHZ_LIST IS NULL AND P_DBMODE IN('AUTHZ'))
+    THEN
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Authorization List Should not be Empty';
+        LEAVE this_proc;
+    END IF;
+	IF(P_DBMODE='SELECT')
+    THEN
+		SELECT * FROM tbl_user_master /*WHERE Active='Y' AND AuthorizeFlag='Y' AND AuthorizeBy IS NOT NULL AND AuthorizeDate  IS NOT NULL*/;
+        SET P_ERRORCODE='RES000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='';
+        LEAVE this_proc;
+	END IF;
+    
+    IF(P_DBMODE='INSERT')
+    THEN
+		SET V_RECORD_CNT = (SELECT COUNT(RECORDID) FROM TBL_USER_MASTER WHERE EMAIL = P_EMAIL);
+        
+        IF V_RECORD_CNT < 1
+        THEN
+			INSERT INTO `tbl_user_master`
+(
+`Name`,
+`Email`,
+`Mobile`,
+`DOB`,
+`Gender`,
+`NickName`,
+`BloodGroup`,
+`City`,
+`NativePlace`,
+`State`,
+`Country`,
+`Branch`,
+`AdmissionYear`,
+`PassoutYear`,
+`Hobbies`,
+`CompanyName`,
+`Designation`,
+`HigherEducation`,
+`BachelorDegree`,
+`Specialization`,
+`ImgUrl`,
+`Experience`,
+`About`,
+`Active`,
+`AuthorizeFlag`,
+`CreatedBy`,
+`CreatedDate`,
+`LinkedIn`)
+VALUES
+(
+P_NAME,
+P_EMAIL,
+P_MOBILE,
+P_DOB,
+P_GENDER,
+P_NICK_NAME,
+P_BLOOD_GROUP,
+P_CITY,
+P_NATIVE,
+P_STATE,
+P_COUNTRY,
+P_BRANCH,
+P_ADDMISSION_YEAR,
+P_PASSOUT_YEAR,
+P_HOBBIES,
+P_COMPANYNAME,
+P_DESIGNATION,
+P_HIGHER_EDUCATION,
+P_BRANCH,
+P_SPECIALIZATION,
+P_IMG_URL,
+P_EXPERIENCE,
+P_ABOUT,
+'N',
+'N',
+P_EMAIL,
+NOW(),
+P_LINKED_IN);
+
+SET P_RECORD_ID = (SELECT RECORDID FROM TBL_USER_MASTER WHERE EMAIL = P_EMAIL);/*(SELECT LAST_INSERT_ID());*/
+
+UPDATE TBL_USER_MASTER SET IMGURL=CONCAT(P_RECORD_ID,'.',P_IMG_URL) where RECORDID=P_RECORD_ID;
+
+INSERT INTO `tbl_login_master`
+(
+`LoginId`,`Mobile`,`Email`,`Active`,`Password`,`Authorized`,`CreatedDate`,`CreatedBy`)
+VALUES
+(P_RECORD_ID,P_MOBILE,P_EMAIL,'N',P_PASSWORD,'N',NOW(),P_EMAIL);
+
+        
+			SET P_ERRORCODE='RES000';
+			SET P_ERRORFLAG='N';
+			SET P_ERRORDESC='Success';
+			LEAVE this_proc;
+        ELSE
+			SET P_ERRORCODE='RES001';
+			SET P_ERRORFLAG='Y';
+			SET P_ERRORDESC='Record already exists. Please try with login';
+			LEAVE this_proc;
+        END IF;
+        
+    LEAVE this_proc;
+    END IF;
+   
+   IF(P_DBMODE='UPDATE')
+    THEN
+	  SELECT COUNT(1) INTO V_RECORD_CNT FROM tbl_user_master WHERE RecordId=P_RECORD_ID;
+      IF (V_RECORD_CNT>0)
+      THEN
+		UPDATE tbl_user_master 
+        SET 
+			Name=IFNULL(P_NAME,Name),
+			Email=IFNULL(P_EMAIL,Email),
+			Mobile=P_MOBILE,
+			DOB=IFNULL(P_DOB,DOB),
+			Gender=IFNULL(P_GENDER,Gender),
+            NickName=P_NICK_NAME,
+            BloodGroup=P_BLOOD_GROUP,
+			City=IFNULL(P_CITY,City),
+			State=P_STATE,
+			Country=IFNULL(P_COUNTRY,Country),
+			Branch=IFNULL(P_BRANCH,Branch),
+            AdmissionYear=IFNULL(P_ADDMISSION_YEAR,AdmissionYear),
+			PassoutYear=IFNULL(P_PASSOUT_YEAR,PassoutYear),
+			Hobbies=P_HOBBIES,
+			CompanyName=IFNULL(P_COMPANYNAME,CompanyName),
+			Designation=IFNULL(P_DESIGNATION,Designation),
+			HigherEducation=P_HIGHER_EDUCATION,
+			BachelorDegree=IFNULL(P_BRANCH,Branch),
+			Specialization=P_SPECIALIZATION,
+            NativePLACE=P_NATIVE,
+			/*ImgUrl=IFNULL(P_IMG_URL,ImgUrl),*/
+			Experience=P_EXPERIENCE,
+			About=P_ABOUT,
+            LinkedIn=P_LINKED_IN,
+            BdayFlag = IFNULL(P_BDAY_FLAG,BdayFlag),
+			ModifiedBy=P_LOGINID,
+			ModifiedDate=NOW()
+		WHERE 
+			RecordId=P_RECORD_ID;
+            
+        SET P_ERRORCODE='RES000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='Record Updated Successfully';
+        LEAVE this_proc;
+	 ELSE
+		SET P_ERRORCODE='RES001';
+		SET P_ERRORFLAG='Y';
+		SET P_ERRORDESC='Invalid Record ID';
+        LEAVE this_proc;
+     END IF;
+	END IF;
+    IF(P_DBMODE='AUTHZ') 
+    THEN
+		/*SELECT COUNT(1) INTO V_MAKER_CHECKER FROM tbl_usermaster WHERE FIND_IN_SET(RecordId,P_AUTHZ_LIST) AND Active='N' AND AuthorizeFlag='N' AND AuthorizeBy IS NULL AND AuthorizeDate  IS NULL AND CreatedBy=P_LOGINID;
+        IF(V_MAKER_CHECKER>0)
+		THEN
+			SET P_ERRORCODE='RES0001';
+			SET P_ERRORFLAG='Y';
+			SET P_ERRORDESC='Maker and Checker should not be Same';
+			LEAVE this_proc;
+		END IF;*/
+		SELECT COUNT(1) INTO V_AUTHZ_LIST FROM tbl_user_master WHERE FIND_IN_SET(RecordId,P_AUTHZ_LIST);
+        IF(V_AUTHZ_LIST>0)
+        THEN
+         SET SQL_SAFE_UPDATES=0;
+			UPDATE tbl_user_master 
+			SET 
+				Active='Y',
+                AuthorizeFlag='Y',
+				ModifiedBy=P_LOGINID,
+				ModifiedDate=NOW(),
+                AuthorizeBy=P_LOGINID,
+                AuthorizeDate=NOW()
+			WHERE 
+				FIND_IN_SET(RecordId,P_AUTHZ_LIST);
+			
+            UPDATE tbl_user_master 
+			SET 
+				Active='Y',
+                AuthorizeFlag='Y',
+				ModifiedBy=P_LOGINID,
+				ModifiedDate=NOW(),
+                AuthorizeBy=P_LOGINID,
+                AuthorizeDate=NOW()
+			WHERE 
+				FIND_IN_SET(LoginId,P_AUTHZ_LIST);
+          SET SQL_SAFE_UPDATES=1;      
+			SET P_ERRORCODE='RES000';
+			SET P_ERRORFLAG='N';
+			SET P_ERRORDESC='Records Authorize Successfully';
+            LEAVE this_proc;
+        ELSE
+			SET P_ERRORCODE='RES001';
+			SET P_ERRORFLAG='Y';
+			SET P_ERRORDESC='No Records Found for Authorization';
+            LEAVE this_proc;
+        END IF;
+    END IF;
+    IF(P_DBMODE='GETAUTHZLIST')
+    THEN
+		SELECT * FROM tbl_user_master WHERE Active='N' AND AuthorizeFlag='N' AND AuthorizeBy IS NULL AND AuthorizeDate  IS NULL AND CreatedBy<>P_LOGINID;
+        SET P_ERRORCODE='RES000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='';
+        LEAVE this_proc;
+	END IF;
+    IF(P_DBMODE='SEARCH')
+    THEN
+		SELECT * FROM tbl_user_master 
+        WHERE 
+        RecordId=IFNULL(P_RECORD_ID,RecordId)
+        AND IFNULL(Name,'') like Concat('%',Concat(IFNULL(P_NAME,IFNULL(Name,'')),'%'))
+        AND IFNULL(PassoutYear,'')=IFNULL(P_PASSOUT_YEAR,IFNULL(PassoutYear,''))
+        AND IFNULL(Branch,'')=IFNULL(P_BRANCH,IFNULL(Branch,''))
+        AND IFNULL(BloodGroup,'')=IFNULL(P_BLOOD_GROUP,IFNULL(BloodGroup,''))
+        AND IFNULL(City,'') like Concat('%',Concat(IFNULL(P_CITY,IFNULL(City,'')),'%'))
+        AND IFNULL(Country,'')  like Concat('%',Concat(IFNULL(P_COUNTRY,IFNULL(Country,'')),'%'))
+        /*AND Active='Y'
+        AND AuthorizeFlag='Y'
+        AND AuthorizeBy is not null
+        AND AuthorizeDate is not null*/;
+        
+        SET P_ERRORCODE='RES000';
+		SET P_ERRORFLAG='N';
+		SET P_ERRORDESC='Success';
+        LEAVE this_proc;
+	END IF;
+    IF P_DBMODE = 'GET_HEADER_VALUES'
+    THEN
+		SET @LastLoggedIn = (Select * from (SELECT CreatedDate from tbl_audit_log where LOGINID=P_RECORD_ID order by CreatedDate desc limit 2) as a  order by a.CreatedDate limit 1);
+		SET @Families = (select count(RecordId) from tbl_user_master);
+        SET @Members = (select count(RecordId) from tbl_user_master);
+        SET @LoggedIn = (select count(RecordId) from tbl_audit_log where LoginId is not null);
+        SET @Role = (select Role from tbl_login_master where LoginId=P_RECORD_ID);
+        
+        select *,@LastLoggedIn as LastLoggedIn,@Families as Families,@Members as Members,@LoggedIn as LoggedIn,@Role as Role from tbl_user_master where recordId = P_RECORD_ID;
+        SET P_ERRORCODE = "SUC000";
+		SET P_ERRORFLAG = "N";
+		SET P_ERRORDESC = "SUCCESS";
+        
+        LEAVE this_proc;
+    END IF;
+    IF P_DBMODE = 'GET_USER_LIST'
+    THEN
+		SELECT * FROM TBL_USER_MASTER /*WHERE Active='Y' and AuthorizeDate is not null and AuthorizeBy is not null and AuthorizeFlag='Y'*/;
+        
+        SET P_ERRORCODE = "SUC000";
+        SET P_ERRORFLAG = "N";
+        SET P_ERRORDESC = "SUCCESS";
+        LEAVE this_proc;
+    END IF;
+    
+    IF P_DBMODE = 'GET_USER_BY_RECORD_ID'
+    THEN
+		SELECT * FROM TBL_USER_MASTER WHERE RECORDID = P_RECORD_ID /*AND AuthorizeDate is not null and AuthorizeBy is not null and AuthorizeFlag='Y'*/;
+        
+        SET P_ERRORCODE = "SUC000";
+        SET P_ERRORFLAG = "N";
+        SET P_ERRORDESC = "SUCCESS";
+        LEAVE this_proc;
+    END IF;
+    
+    IF P_DBMODE = 'UPDATE_PROFILE_PHOTO'
+THEN
+	SELECT COUNT(1) INTO V_RECORD_CNT FROM tbl_user_master WHERE RecordId=P_RECORD_ID;
+    IF (V_RECORD_CNT>0)
+    THEN
+		UPDATE TBL_USER_MASTER SET imgUrl=CONCAT(P_RECORD_ID,'.',P_IMG_URL) WHERE RECORDID = P_RECORD_ID;
+	
+		SET P_ERRORCODE = "SUC000";
+        SET P_ERRORFLAG = "N";
+        SET P_ERRORDESC = "Profile Photo Updated";
+        LEAVE this_proc;
+	ELSE
+		SET P_ERRORCODE = "ERR001";
+        SET P_ERRORFLAG = "Y";
+        SET P_ERRORDESC = "No record found";
+        LEAVE this_proc;
+	END IF;	
+END IF;
+END;
+END

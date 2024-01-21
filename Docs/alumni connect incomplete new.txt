@@ -1,0 +1,37 @@
+*birthday module
+
+birthday filterd by months and sorted in assending order
+
+in birthday module we can see alumni's profile photo ,name , birth date (not year) ,and wishes sending option like gmail id or mobile number ,and branch ,addmission passout year
+
+
+
+*we have to add printing option in dashbord user after searching page 
+
+*admin module 
+
+
+admin can check whether alumni is real or not.
+admin can check blogs that alumni want to post.
+
+
+*Event Module
+
+
+
+* Blog Module
+at blog page 
+
+
+merged menu bar
+
+notification bell
+
+
+******************************************************************************************************************************************************************
+_reagisterTION MAadhye 
+	Admmision number
+	selection madhye admine and student
+
+_View Profile madhye
+	Edit Profile in View Profile and Real User at Top of roject 

@@ -1,0 +1,275 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Menu.master.cs" Inherits="AlumniConnect.Menu" %>
+
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="content/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="content/font/bootstrap-icons.css" />
+    <script src="content/js/jquery.min.js"></script>
+    <script src="content/js/popper.min.js"></script>
+    <script src="content/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="content/font/bootstrap-icons.css" />
+    <asp:ContentPlaceHolder ID="head" runat="server">
+        <meta charset="utf-8" />
+
+    </asp:ContentPlaceHolder>
+    <style>
+        .nav-item {
+            padding: 10px;
+            font-size: 24px;
+        }
+
+            .nav-item:hover {
+                background-color: #036;
+                color: white;
+                text-decoration: none;
+            }
+
+        .nav-link {
+            text-decoration: none !important;
+            text-decoration-color: #fff;
+        }
+
+            .nav-link:hover {
+                color: white;
+                text-decoration: none;
+            }
+
+        .nav-item > a:hover {
+            color: white;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .navbar-nav {
+            color: white;
+            text-decoration: none;
+        }
+
+            .navbar-nav:hover {
+                color: white;
+                text-decoration: none;
+            }
+
+        .collapse navbar-collapse {
+            color: white;
+            text-decoration: none;
+        }
+
+        .profile-tab {
+            padding-left: 40px;
+            padding-right: 40px;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .btn-multilevel-menu {
+            color: #007bff;
+            text-decoration: none !important;
+            text-decoration-color: #fff;
+            border: none !important;
+            background: transparent;
+                padding-top: 8px;
+        }
+        .btn-multilevel-menu:focus {
+            border:none;
+            outline:none;   
+        }
+        .btn-multilevel-menu::selection {
+            border:none;
+        }
+
+        .btn-multilevel-menu-show{
+            left: -10px;
+                width:190px;
+        }
+
+        .btn-multilevel-menu-show >li {
+            color:red !important;
+        }
+
+        .btn-multilevel ul{
+            color:red;
+        }
+
+        .multilevel-submenu{
+            padding:15px;
+                color: #007bff;
+    text-decoration: none !important;
+    text-decoration-color: #fff;
+    border: none !important;
+    background: transparent;
+    font-size:22px;
+        }
+
+        .multilevel-submenu:hover{
+            background-color:#003366;
+        }
+
+        a{
+            text-decoration:none;
+        }
+
+        a:hover {
+            text-decoration:none;
+        }
+        
+    </style>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div class="row" style="text-align: center;margin-right:auto;">
+            <div class="col-md=12"  style="text-align: center;width:100%;">
+                <img src="content/images/newlogo.jpg" style="align-content:center;"/>
+            </div>
+        </div>
+        <div>
+            <nav class="navbar navbar-expand-sm" style="border-bottom: 1px solid #dadadad1; padding: 0px 15px 0px 30px;">
+                <%--<a class="navbar-brand" href="Dashboard.aspx">
+
+                    <img src="content/images/logo.png" /></a>
+                <a class="navbar-brand" href="Dashboard.aspx">
+                    <img src="content/images/newlogo.jpg" />
+                </a>--%>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse col-md-8 offset-2" id="collapsibleNavbar" style="margin-top: -10px;">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="Dashboard.aspx">Home</a>
+                        </li>
+                        <%--<li class="nav-item">
+                            <a class="nav-link" href="ViewProfile.aspx">View Profile</a>
+                        </li>--%>
+                        <li class="nav-item">
+                            <div class="dropdown btn-multilevel">
+                                <%--<button class="btn btn-default dropdown-toggle btn-multilevel-menu" type="button" data-toggle="dropdown">--%>
+                                <button class="dropdown-toggle btn-multilevel-menu" type="button" data-toggle="dropdown">
+                                    Profile    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu btn-multilevel-menu-show">
+                                    <li class="multilevel-submenu"><a tabindex="-1" href="EditProfile.aspx">Edit Profile</a></li>
+                                    <li class="multilevel-submenu"><a tabindex="-1" href="ViewProfile.aspx">View Profile</a></li>
+                                    <%--<li class="dropdown-submenu">
+                                        <a class="test" tabindex="-1" href="#">New dropdown <span class="caret"></span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a tabindex="-1" href="#">2nd level dropdown</a></li>
+                                            <li><a tabindex="-1" href="#">2nd level dropdown</a></li>
+                                            <li class="dropdown-submenu">
+                                                <a class="test" href="#">Another dropdown <span class="caret"></span></a>
+                                                <ul class="dropdown-menu">
+                                                    <li><a href="#">3rd level dropdown</a></li>
+                                                    <li><a href="#">3rd level dropdown</a></li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>--%>
+                                </ul>
+                            </div>
+                            <%--<a class="nav-link" href="EditProfile.aspx">Edit Profile</a>--%>
+                        </li>
+                        <li class="nav-item">
+                            <div class="dropdown btn-multilevel">
+                                <%--<button class="btn btn-default dropdown-toggle btn-multilevel-menu" type="button" data-toggle="dropdown">--%>
+                                <button class="dropdown-toggle btn-multilevel-menu" type="button" data-toggle="dropdown">
+                                    Openings    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu btn-multilevel-menu-show">
+                                    <li class="multilevel-submenu"><a tabindex="-1" href="Opening.aspx">Add Opening</a></li>
+                                    <li class="multilevel-submenu"><a tabindex="-1" href="ViewOpenings.aspx">View Openings</a></li>
+                                    <%--<li class="dropdown-submenu">
+                                        <a class="test" tabindex="-1" href="#">New dropdown <span class="caret"></span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a tabindex="-1" href="#">2nd level dropdown</a></li>
+                                            <li><a tabindex="-1" href="#">2nd level dropdown</a></li>
+                                            <li class="dropdown-submenu">
+                                                <a class="test" href="#">Another dropdown <span class="caret"></span></a>
+                                                <ul class="dropdown-menu">
+                                                    <li><a href="#">3rd level dropdown</a></li>
+                                                    <li><a href="#">3rd level dropdown</a></li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>--%>
+                                </ul>
+                            </div>
+                            <%--<a class="nav-link" href="Opening.aspx">Openings</a>--%>
+                        </li>
+                        <li class="nav-item">
+                            <div class="dropdown">
+                                <%--<button class="btn btn-default dropdown-toggle btn-multilevel-menu" type="button" data-toggle="dropdown">--%>
+                                <button class="dropdown-toggle btn-multilevel-menu" type="button" data-toggle="dropdown">
+                                    Blogs
+    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu btn-multilevel-menu-show">
+                                    <li class="multilevel-submenu"><a tabindex="-1" href="Blog.aspx">Add Blog</a></li>
+                                    <li class="multilevel-submenu"><a tabindex="-1" href="ViewBlog.aspx">View Blogs</a></li>
+                                    <%--<li class="dropdown-submenu">
+                                        <a class="test" tabindex="-1" href="#">New dropdown <span class="caret"></span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a tabindex="-1" href="#">2nd level dropdown</a></li>
+                                            <li><a tabindex="-1" href="#">2nd level dropdown</a></li>
+                                            <li class="dropdown-submenu">
+                                                <a class="test" href="#">Another dropdown <span class="caret"></span></a>
+                                                <ul class="dropdown-menu">
+                                                    <li><a href="#">3rd level dropdown</a></li>
+                                                    <li><a href="#">3rd level dropdown</a></li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>--%>
+                                </ul>
+                            </div>
+                            <%--<a class="nav-link" href="Blog.aspx">Blog</a>--%>
+                        </li>
+                        <li class="nav-item">
+                            <div class="dropdown">
+                                <%--<button class="btn btn-default dropdown-toggle btn-multilevel-menu" type="button" data-toggle="dropdown">--%>
+                                <button class="dropdown-toggle btn-multilevel-menu" type="button" data-toggle="dropdown">
+                                    Events
+    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu btn-multilevel-menu-show">
+                                    <li class="multilevel-submenu"><a tabindex="-1" href="Event.aspx">Add Event</a></li>
+                                    <li class="multilevel-submenu"><a tabindex="-1" href="ViewEvents.aspx">View Events</a></li>
+                                    
+                                </ul>
+                            </div>
+                            <%--<a class="nav-link" href="Event.aspx">Events</a>--%>
+                        </li>
+                        <% if (Convert.ToString(Session["ROLE"]) == "ADMIN")
+                            {%>
+                    <li class="nav-item">
+                        <div class="dropdown">
+                                <%--<button class="btn btn-default dropdown-toggle btn-multilevel-menu" type="button" data-toggle="dropdown">--%>
+                                <button class="dropdown-toggle btn-multilevel-menu" type="button" data-toggle="dropdown">
+                                    Admin
+    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu btn-multilevel-menu-show">
+                                    <li class="multilevel-submenu"><a tabindex="-1" href="AddBroadcast.aspx">Add Broadcast</a></li>
+                                    <li class="multilevel-submenu"><a tabindex="-1" href="ViewBraodcast.aspx">View Broadcast</a></li>
+                                    <li class="multilevel-submenu"><a tabindex="-1" href="AuthorizeUser.aspx">Authorize Users</a></li>
+                                </ul>
+                            </div>
+                        <%} %>
+                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="Logout.aspx">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+            </asp:ContentPlaceHolder>
+        </div>
+    </form>
+</body>
+</html>

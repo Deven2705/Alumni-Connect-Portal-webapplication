@@ -1,0 +1,151 @@
+CREATE TABLE `tbl_blogs` (
+  `RecordId` bigint NOT NULL AUTO_INCREMENT,
+  `Title` varchar(500) DEFAULT NULL,
+  `Description` varchar(3000) DEFAULT NULL,
+  `Active` varchar(1) DEFAULT 'N',
+  `CreatedBy` varchar(200) DEFAULT NULL,
+  `CreatedDate` datetime DEFAULT CURRENT_TIMESTAMP,
+  `ModifiedBy` varchar(200) DEFAULT NULL,
+  `ModifiedDate` datetime DEFAULT NULL,
+  `AuthorizeBy` varchar(200) DEFAULT NULL,
+  `AuthorizeDate` datetime DEFAULT NULL,
+  PRIMARY KEY (`RecordId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+CREATE TABLE `tbl_event` (
+  `RecordId` bigint NOT NULL AUTO_INCREMENT,
+  `Title` varchar(500) DEFAULT NULL,
+  `ImgUrl` varchar(1000) DEFAULT NULL,
+  `EventDetail` varchar(3000) DEFAULT NULL,
+  `EventDate` datetime DEFAULT NULL,
+  `Active` varchar(1) DEFAULT 'N',
+  `CreatedBy` varchar(200) DEFAULT NULL,
+  `CreatedDate` datetime DEFAULT CURRENT_TIMESTAMP,
+  `ModifiedBy` varchar(200) DEFAULT NULL,
+  `ModifiedDate` datetime DEFAULT NULL,
+  `AuthorizeBy` varchar(200) DEFAULT NULL,
+  `AuthorizeDate` datetime DEFAULT NULL,
+  PRIMARY KEY (`RecordId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+CREATE TABLE `tbl_login_master` (
+  `RecordId` int NOT NULL AUTO_INCREMENT,
+  `LoginId` varchar(45) DEFAULT NULL,
+  `Mobile` varchar(45) DEFAULT NULL,
+  `Email` varchar(45) DEFAULT NULL,
+  `Active` varchar(1) DEFAULT NULL,
+  `Password` varchar(100) DEFAULT NULL,
+  `Authorized` varchar(1) DEFAULT NULL,
+  `CreatedDate` datetime DEFAULT NULL,
+  `CreatedBy` varchar(45) DEFAULT NULL,
+  `ModifiedDate` datetime DEFAULT NULL,
+  `ModifiedBy` varchar(45) DEFAULT NULL,
+  `AuthorizedDate` datetime DEFAULT NULL,
+  `AuthorizedBy` varchar(45) DEFAULT NULL,
+  `Role` varchar(45) DEFAULT 'USER',
+  PRIMARY KEY (`RecordId`),
+  UNIQUE KEY `recordId_UNIQUE` (`RecordId`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+CREATE TABLE `tbl_opening` (
+  `RecordId` bigint NOT NULL AUTO_INCREMENT,
+  `JobTitle` varchar(500) DEFAULT NULL,
+  `JobDescription` varchar(3000) DEFAULT NULL,
+  `Type` varchar(200) DEFAULT NULL,
+  `Active` varchar(1) DEFAULT 'N',
+  `ValidDate` datetime DEFAULT NULL,
+  `CreatedBy` varchar(200) DEFAULT NULL,
+  `CreatedDate` datetime DEFAULT CURRENT_TIMESTAMP,
+  `ModifiedBy` varchar(200) DEFAULT NULL,
+  `ModifiedDate` datetime DEFAULT NULL,
+  `AuthorizeBy` varchar(200) DEFAULT NULL,
+  `AuthorizeDate` datetime DEFAULT NULL,
+  PRIMARY KEY (`RecordId`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+CREATE TABLE `tbl_user_master` (
+  `RecordId` bigint NOT NULL AUTO_INCREMENT,
+  `Name` varchar(200) DEFAULT NULL,
+  `Email` varchar(200) DEFAULT NULL,
+  `Mobile` varchar(20) DEFAULT NULL,
+  `DOB` datetime DEFAULT NULL,
+  `Gender` varchar(1) DEFAULT NULL,
+  `NickName` varchar(50) DEFAULT NULL,
+  `BloodGroup` varchar(10) DEFAULT NULL,
+  `City` varchar(200) DEFAULT NULL,
+  `NativePlace` varchar(100) DEFAULT NULL,
+  `State` varchar(200) DEFAULT NULL,
+  `Country` varchar(200) DEFAULT NULL,
+  `Branch` varchar(200) DEFAULT NULL,
+  `AdmissionYear` varchar(4) DEFAULT NULL,
+  `PassoutYear` varchar(4) DEFAULT NULL,
+  `Hobbies` varchar(500) DEFAULT NULL,
+  `CompanyName` varchar(500) DEFAULT NULL,
+  `Designation` varchar(500) DEFAULT NULL,
+  `HigherEducation` varchar(500) DEFAULT NULL,
+  `BachelorDegree` varchar(500) DEFAULT NULL,
+  `Specialization` varchar(500) DEFAULT NULL,
+  `ImgUrl` varchar(1000) DEFAULT NULL,
+  `Experience` varchar(3000) DEFAULT NULL,
+  `About` varchar(3000) DEFAULT NULL,
+  `Active` varchar(1) DEFAULT 'N',
+  `AuthorizeFlag` varchar(1) DEFAULT 'N',
+  `CreatedBy` varchar(200) DEFAULT NULL,
+  `CreatedDate` datetime DEFAULT CURRENT_TIMESTAMP,
+  `ModifiedBy` varchar(200) DEFAULT NULL,
+  `ModifiedDate` datetime DEFAULT NULL,
+  `AuthorizeBy` varchar(200) DEFAULT NULL,
+  `AuthorizeDate` datetime DEFAULT NULL,
+  `LinkedIn` varchar(200) DEFAULT NULL,
+  `BdayFlag` varchar(1) DEFAULT 'Y',
+  PRIMARY KEY (`RecordId`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+CREATE TABLE `usermaster` (
+  `Id` int NOT NULL AUTO_INCREMENT,
+  `Name` varchar(45) DEFAULT NULL,
+  `LastName` varchar(45) DEFAULT NULL,
+  `Email` varchar(45) DEFAULT NULL,
+  `MobileNo` varchar(20) DEFAULT NULL,
+  `Password` varchar(15) DEFAULT NULL,
+  `JoiningDate` datetime DEFAULT NULL,
+  `PassoutDate` datetime DEFAULT NULL,
+  `Branch` varchar(45) DEFAULT NULL,
+  `CreatedDate` datetime DEFAULT NULL,
+  `CreatedBy` varchar(45) DEFAULT NULL,
+  `Status` varchar(1) DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------

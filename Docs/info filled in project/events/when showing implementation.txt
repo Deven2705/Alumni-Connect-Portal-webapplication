@@ -1,0 +1,19 @@
+Git & Github Workshop
+
+CSI PHCET conducted a peer-to-peer workshop on Git and Github on 31st July 2021 in order to share knowledge and information among students about this software and platform. This can be seen as a part of our goal “For the students, by the students”.
+
+Event was conducted by Rishabh Mehta, a third year computer engineering student. Students showed tremendous interest in the event. For sure it helped them a lot with learning about these open source software and services in detail. As it will result in helping them with their projects be it individual or group projects.
+
+The session was held for 2 hours. The 1st half of the session consisted of a brief explanation on Git and the 2nd half consisted of a session on github. Both theory and practical segments were covered effectively.
+
+The topics that were included in the session:
+
+Git
+Version Control explanation.
+Basic of gits and setup
+Git commands
+Git concepts in detail.
+Github
+Introduction to github
+Steps to contribute to open source projects.
+Briefly explanation of how this platform can be used effectively.

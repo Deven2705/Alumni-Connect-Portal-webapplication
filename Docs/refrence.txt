@@ -1,0 +1,34 @@
+Contents
+Abstract	 ii
+Acknowledgments	 iii
+List of Abbreviations 	iv
+List of Figures 	v
+List of Tables 	vi
+List of Symbols 	vii
+1 Introduction
+1.1 Introduction 
+1.2 Motivation 
+1.3 Problem Statement & Objectives 
+1.4 Objective
+1.4 Organization of the Report 	 1 - (Remove)
+2 Literature Survey
+2.1 Survey of Existing System
+2.2 Limitation Existing system or research gap
+2.3 Mini Project Contribution 	 11
+3 Proposed System (eg New Approach of Data Summarization ) 
+3.1 Introduction 
+3.2 Architecture/ Framework 
+3.3 Algorithm and Process Design 
+3.4 Details of Hardware & Software
+3.4 Experiment and Results 
+3.5 Conclusion and Future work.
+	18
+References 	32
+
+https://dotnet.microsoft.com/en-us/apps/aspnet
+https://www.w3schools.com/
+https://www.c-sharpcorner.com/
+https://dev.mysql.com/
+
+book reference
+html5-tutorialspoint
